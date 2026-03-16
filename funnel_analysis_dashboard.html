@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing Funnel & Conversion Analysis — 2024</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07090f;
+    --surface: #0d1117;
+    --surface2: #131920;
+    --border: #1e2733;
+    --violet: #7c5cfc;
+    --cyan: #00d4ff;
+    --pink: #ff4fa3;
+    --green: #00e89a;
+    --amber: #ffb830;
+    --text: #e2e8f0;
+    --muted: #5a6a7e;
+    --font: 'Space Grotesk', sans-serif;
+    --mono: 'Space Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* Animated gradient header */
+  header {
+    padding: 56px 52px 48px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 60% 50%, rgba(124,92,252,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(0,212,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--violet);
+    margin-bottom: 14px;
+  }
+
+  header h1 {
+    font-size: clamp(28px, 4vw, 50px);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  header h1 em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--cyan), var(--violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .hstat {
+    text-align: center;
+    padding: 12px 20px;
+    background: rgba(124,92,252,0.08);
+    border: 1px solid rgba(124,92,252,0.2);
+    border-radius: 6px;
+  }
+
+  .hstat-val {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cyan);
+    display: block;
+  }
+
+  .hstat-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  main {
+    padding: 44px 52px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .sec-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* FUNNEL VISUAL */
+  .funnel-visual {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .funnel-stage {
+    flex: 1;
+    padding: 32px 20px;
+    text-align: center;
+    position: relative;
+    border-right: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+
+  .funnel-stage:last-child { border-right: none; }
+  .funnel-stage:hover { background: var(--surface2); }
+
+  .funnel-stage::after {
+    content: '→';
+    position: absolute;
+    right: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--border);
+    font-size: 20px;
+    z-index: 2;
+  }
+  .funnel-stage:last-child::after { display: none; }
+
+  .fs-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .fs-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .fs-value {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 8px;
+    color: var(--fs-color);
+  }
+
+  .fs-conv {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.05);
+    color: var(--muted);
+    display: inline-block;
+  }
+
+  .fs-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--fs-color);
+    opacity: 0.6;
+  }
+
+  /* Grid layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+
+  .panel {
+    background: var(--surface);
+    padding: 28px;
+  }
+
+  .panel h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .panel .desc {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 22px;
+  }
+
+  /* Channel table */
+  .ch-table { width: 100%; border-collapse: collapse; }
+  .ch-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ch-table td {
+    padding: 13px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ch-table tr:last-child td { border-bottom: none; }
+  .ch-table tr:hover td { background: var(--surface2); }
+
+  .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .badge-green { background: rgba(0,232,154,0.12); color: var(--green); }
+  .badge-amber { background: rgba(255,184,48,0.12); color: var(--amber); }
+  .badge-red { background: rgba(255,79,163,0.12); color: var(--pink); }
+  .badge-violet { background: rgba(124,92,252,0.12); color: var(--violet); }
+
+  /* Insights */
+  .insights {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .insight {
+    background: var(--surface);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .insight::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--i-color);
+  }
+
+  .i-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--i-color);
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .insight h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    line-height: 1.35;
+  }
+
+  .insight p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  /* Recommendations */
+  .recos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .reco {
+    background: var(--surface);
+    padding: 28px;
+    display: flex;
+    gap: 18px;
+  }
+
+  .reco-n {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--violet);
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  .reco h4 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .reco p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  .tag-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 22px 52px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer p { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
+
+  @media (max-width: 900px) {
+    main, header, footer { padding-left: 20px; padding-right: 20px; }
+    .funnel-visual { flex-direction: column; }
+    .funnel-stage::after { display: none; }
+    .grid-2, .grid-3, .insights, .recos { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div>
+      <div class="eyebrow">Future Interns · Data Science & Analytics · Task 3 · 2026</div>
+      <h1>Marketing Funnel &<br><em>Conversion Performance</em></h1>
+    </div>
+    <div class="header-stats">
+      <div class="hstat">
+        <span class="hstat-val">5,000</span>
+        <div class="hstat-label">Total Visitors</div>
+      </div>
+      <div class="hstat">
+        <span class="hstat-val">1.3%</span>
+        <div class="hstat-label">Overall Conv. Rate</div>
+      </div>
+      <div class="hstat">
+        <span class="hstat-val">$96.9K</span>
+        <div class="hstat-label">Revenue Generated</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Funnel Visual -->
+  <div>
+    <div class="sec-label">Full Funnel Overview — Visitors to Customers</div>
+    <div class="funnel-visual">
+      <div class="funnel-stage" style="--fs-color: #00d4ff">
+        <div class="fs-bar"></div>
+        <div class="fs-icon">👥</div>
+        <div class="fs-label">Visitors</div>
+        <div class="fs-value" style="color:#00d4ff">5,000</div>
+        <div class="fs-conv">100%</div>
+      </div>
+      <div class="funnel-stage" style="--fs-color: #7c5cfc">
+        <div class="fs-bar"></div>
+        <div class="fs-icon">📋</div>
+        <div class="fs-label">Leads</div>
+        <div class="fs-value" style="color:#7c5cfc">899</div>
+        <div class="fs-conv">18.0% of visitors</div>
+      </div>
+      <div class="funnel-stage" style="--fs-color: #ffb830">
+        <div class="fs-bar"></div>
+        <div class="fs-icon">🎯</div>
+        <div class="fs-label">MQL</div>
+        <div class="fs-value" style="color:#ffb830">416</div>
+        <div class="fs-conv">46.3% of leads</div>
+      </div>
+      <div class="funnel-stage" style="--fs-color: #ff4fa3">
+        <div class="fs-bar"></div>
+        <div class="fs-icon">🔥</div>
+        <div class="fs-label">SQL</div>
+        <div class="fs-value" style="color:#ff4fa3">178</div>
+        <div class="fs-conv">42.8% of MQL</div>
+      </div>
+      <div class="funnel-stage" style="--fs-color: #00e89a">
+        <div class="fs-bar"></div>
+        <div class="fs-icon">✅</div>
+        <div class="fs-label">Customers</div>
+        <div class="fs-value" style="color:#00e89a">65</div>
+        <div class="fs-conv">36.5% of SQL</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Funnel drop-off chart + monthly trend -->
+  <div>
+    <div class="sec-label">Conversion Trends</div>
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Funnel Drop-Off Analysis</h3>
+        <p class="desc">Volume lost at each stage — biggest drop at Visitor→Lead (4,101 lost)</p>
+        <div style="height:280px"><canvas id="funnelChart"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Monthly Visitors, Leads & Customers</h3>
+        <p class="desc">March and November show the strongest customer conversion months</p>
+        <div style="height:280px"><canvas id="monthlyChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Channel performance -->
+  <div>
+    <div class="sec-label">Channel Performance</div>
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Revenue by Channel</h3>
+        <p class="desc">Email and Referral generate the most revenue despite lower visitor volume</p>
+        <div style="height:270px"><canvas id="channelRevChart"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Lead Conversion Rate by Channel</h3>
+        <p class="desc">Email converts 35.6% of visitors to leads — 4.6× better than Social Media</p>
+        <div style="height:270px"><canvas id="channelConvChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Channel table -->
+  <div>
+    <div class="sec-label">Channel Comparison Table</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;padding:28px">
+      <h3 style="margin-bottom:4px">Full Channel Performance Breakdown</h3>
+      <p class="desc" style="margin-bottom:20px">Visitors, leads, customers, revenue and avg deal size per acquisition channel</p>
+      <table class="ch-table">
+        <thead>
+          <tr>
+            <th>Channel</th>
+            <th>Visitors</th>
+            <th>Leads</th>
+            <th>Customers</th>
+            <th>Lead Rate</th>
+            <th>Conv. Rate</th>
+            <th>Revenue</th>
+            <th>Avg Deal</th>
+            <th>Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="dot" style="background:#00e89a"></span><strong>Referral</strong></td>
+            <td>489</td><td>125</td><td>17</td>
+            <td>25.6%</td><td>3.48%</td><td>$31,970</td><td>$1,881</td>
+            <td><span class="badge badge-green">Best ROI</span></td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background:#00d4ff"></span><strong>Email</strong></td>
+            <td>627</td><td>223</td><td>24</td>
+            <td>35.6%</td><td>3.83%</td><td>$38,287</td><td>$1,595</td>
+            <td><span class="badge badge-green">Top Revenue</span></td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background:#7c5cfc"></span><strong>Organic Search</strong></td>
+            <td>1,524</td><td>273</td><td>16</td>
+            <td>17.9%</td><td>1.05%</td><td>$18,933</td><td>$1,183</td>
+            <td><span class="badge badge-violet">High Volume</span></td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background:#ffb830"></span><strong>Direct</strong></td>
+            <td>267</td><td>51</td><td>3</td>
+            <td>19.1%</td><td>1.12%</td><td>$3,497</td><td>$1,166</td>
+            <td><span class="badge badge-amber">Moderate</span></td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background:#ff7c4f"></span><strong>Paid Search</strong></td>
+            <td>1,062</td><td>148</td><td>3</td>
+            <td>13.9%</td><td>0.28%</td><td>$2,608</td><td>$869</td>
+            <td><span class="badge badge-red">Low Conv.</span></td>
+          </tr>
+          <tr>
+            <td><span class="dot" style="background:#ff4fa3"></span><strong>Social Media</strong></td>
+            <td>1,031</td><td>79</td><td>2</td>
+            <td>7.7%</td><td>0.19%</td><td>$1,584</td><td>$792</td>
+            <td><span class="badge badge-red">Underperforming</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Key Insights -->
+  <div>
+    <div class="sec-label">Key Insights</div>
+    <div class="insights">
+      <div class="insight" style="--i-color: #ff4fa3">
+        <span class="i-tag">⚠ Critical Drop-Off</span>
+        <h4>82% of Visitors Never Become Leads</h4>
+        <p>The biggest leak in the funnel is at the very top — 4,101 out of 5,000 visitors leave without converting to a lead. This means the landing pages, CTAs, and value proposition are not compelling enough for most visitors. Even a 5% improvement here would add ~250 leads and an estimated $15K+ in potential revenue.</p>
+      </div>
+      <div class="insight" style="--i-color: #ffb830">
+        <span class="i-tag">⚡ Channel Opportunity</span>
+        <h4>Paid Search Spends High, Converts Low</h4>
+        <p>Paid Search drives 1,062 visitors (21% of traffic) but converts only 0.28% to customers — the worst rate of any channel. With only $2,608 revenue generated, it almost certainly has a negative ROI against ad spend. Budget reallocation from Paid Search to Email and Referral programs could deliver 3–5× better returns.</p>
+      </div>
+      <div class="insight" style="--i-color: #00e89a">
+        <span class="i-tag">✦ Growth Driver</span>
+        <h4>Referral is the Highest-Quality Channel</h4>
+        <p>Referral delivers $1,881 average deal size — the highest of all channels — with a 3.48% visitor-to-customer rate. Despite being only 9.8% of traffic, it generates 33% of total revenue. Investing in a structured referral program (incentives, partner network, affiliate scheme) could double Referral traffic and add $30K+ revenue annually.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  <div>
+    <div class="sec-label">Actionable Recommendations</div>
+    <div class="recos">
+      <div class="reco">
+        <div class="reco-n">01 /</div>
+        <div>
+          <div class="tag-pill" style="background:rgba(255,79,163,0.1);color:#ff4fa3">High Priority</div>
+          <h4>Redesign Top-of-Funnel CTAs & Landing Pages</h4>
+          <p>With 82% visitor drop-off before becoming a lead, the top priority is fixing the entry point. A/B test headline copy, add social proof, simplify lead capture forms to 2–3 fields max, and add exit-intent popups. Target: lift visitor-to-lead rate from 18% to 23% — this alone adds ~250 leads per 5,000 visitors.</p>
+        </div>
+      </div>
+      <div class="reco">
+        <div class="reco-n">02 /</div>
+        <div>
+          <div class="tag-pill" style="background:rgba(0,232,154,0.1);color:#00e89a">High Priority</div>
+          <h4>Build a Formal Referral & Partner Program</h4>
+          <p>Referral is already your best channel at $1,881 avg deal and 3.48% conversion. Formalize it — create a partner portal, offer revenue-share or gift incentives for successful referrals, and recruit 10–15 active referral partners. Goal: grow Referral from 489 to 900+ visitors, potentially adding $30–40K revenue.</p>
+        </div>
+      </div>
+      <div class="reco">
+        <div class="reco-n">03 /</div>
+        <div>
+          <div class="tag-pill" style="background:rgba(255,184,48,0.1);color:#ffb830">Medium Priority</div>
+          <h4>Reallocate Paid Search Budget to Email Nurture</h4>
+          <p>Pause or cut Paid Search spend — it generates only $2,608 revenue from 1,062 visitors at $869 avg deal. Reinvest that budget into expanding the Email list through lead magnets, webinars, or gated content. Email already converts at 3.83% with $1,595 avg deal — growing it 50% would add ~$19K revenue.</p>
+        </div>
+      </div>
+      <div class="reco">
+        <div class="reco-n">04 /</div>
+        <div>
+          <div class="tag-pill" style="background:rgba(124,92,252,0.1);color:#7c5cfc">Medium Priority</div>
+          <h4>Add Lead Scoring to Accelerate MQL→SQL Pipeline</h4>
+          <p>Only 42.8% of MQLs progress to SQL. Implement lead scoring based on engagement signals (email opens, page visits, demo requests) to prioritize follow-up on the hottest leads. Automated nurture sequences for cold MQLs (educational content, case studies) could lift MQL→SQL conversion by 8–12 percentage points.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>Future Interns · Data Science & Analytics Task 3 · 2026 Internship Program</p>
+  <p>Simulated Marketing Funnel Dataset · 5,000 Visitors · Jan–Dec 2024 · Python + Chart.js</p>
+</footer>
+
+<script>
+Chart.defaults.font.family = "'Space Mono', monospace";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#5a6a7e';
+
+const VIOLET='#7c5cfc', CYAN='#00d4ff', PINK='#ff4fa3', GREEN='#00e89a', AMBER='#ffb830';
+const BORDER='#1e2733';
+
+// 1. Funnel drop-off chart
+new Chart(document.getElementById('funnelChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Visitors', 'Leads', 'MQL', 'SQL', 'Customers'],
+    datasets: [{
+      label: 'Count',
+      data: [5000, 899, 416, 178, 65],
+      backgroundColor: [CYAN, VIOLET, AMBER, PINK, GREEN],
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: BORDER } },
+      y: { grid: { color: BORDER }, ticks: { callback: v => v.toLocaleString() } }
+    }
+  }
+});
+
+// 2. Monthly chart
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const visitors = [440,375,438,407,384,409,431,446,410,405,433,422];
+const leads = [74,62,77,79,70,75,74,78,75,73,71,91];
+const customers = [5,5,10,4,4,8,5,4,3,3,8,6];
+
+new Chart(document.getElementById('monthlyChart'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [
+      { label: 'Visitors', data: visitors, borderColor: CYAN, backgroundColor: 'rgba(0,212,255,0.06)', borderWidth: 2, pointRadius: 3, fill: true, tension: 0.4, yAxisID: 'y' },
+      { label: 'Leads', data: leads, borderColor: VIOLET, backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, tension: 0.4, yAxisID: 'y' },
+      { label: 'Customers', data: customers, borderColor: GREEN, backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4, pointBackgroundColor: GREEN, tension: 0.4, yAxisID: 'y2' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { boxWidth: 10, padding: 16 } } },
+    scales: {
+      x: { grid: { color: BORDER } },
+      y: { grid: { color: BORDER }, position: 'left' },
+      y2: { grid: { display: false }, position: 'right', ticks: { color: GREEN } }
+    }
+  }
+});
+
+// 3. Revenue by channel
+new Chart(document.getElementById('channelRevChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Email', 'Referral', 'Organic Search', 'Direct', 'Paid Search', 'Social Media'],
+    datasets: [{
+      data: [38287, 31970, 18933, 3497, 2608, 1584],
+      backgroundColor: [CYAN, GREEN, VIOLET, AMBER, '#ff7c4f', PINK],
+      borderColor: '#07090f',
+      borderWidth: 3,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '58%',
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12 } },
+      tooltip: { callbacks: { label: ctx => ctx.label + ': $' + ctx.raw.toLocaleString() } }
+    }
+  }
+});
+
+// 4. Lead conv rate by channel
+new Chart(document.getElementById('channelConvChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Email', 'Direct', 'Referral', 'Organic', 'Paid Search', 'Social'],
+    datasets: [{
+      label: 'Lead Rate %',
+      data: [35.6, 19.1, 25.6, 17.9, 13.9, 7.7],
+      backgroundColor: [CYAN, AMBER, GREEN, VIOLET, '#ff7c4f', PINK],
+      borderRadius: 4
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.raw + '%' } } },
+    scales: {
+      x: { grid: { color: BORDER }, ticks: { callback: v => v + '%' } },
+      y: { grid: { color: BORDER } }
+    }
+  }
+});
+</script>
+</body>
+</html>
